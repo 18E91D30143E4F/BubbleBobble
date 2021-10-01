@@ -125,6 +125,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	mhWnd = hWnd;
+	DragAcceptFiles(mhWnd, TRUE);
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -149,6 +150,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
+	case WM_SIZE:
+		GetClientRect(mhWnd, &clientRect);
+		break;
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -166,6 +170,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_DROPFILES:
+	{
+		HBITMAP bmp = GetBmpByDragDrop(wParam);
+		ChangeSpriteBitmap(sprite, bmp);
+		break;
+	}
 	case WM_KEYDOWN: {
 		switch (wParam)
 		{
@@ -331,4 +341,40 @@ HBITMAP CreateBitmapMask(HBITMAP hbmColour, COLORREF crTransparent)
 	DeleteDC(hdcMem2);
 
 	return hbmMask;
+}
+
+HBITMAP GetBmpByDragDrop(WPARAM wParam)
+{
+	char* fileName = NULL;
+	HDROP drop = (HDROP)wParam;
+	UINT filePathesCount = DragQueryFileW(drop, 0xFFFFFFFF, NULL, 512);
+	UINT longestFileNameLength = 0;
+	HBITMAP hBitmap = NULL;
+	for (UINT i = 0; i < filePathesCount; ++i)
+	{
+		UINT fileNameLength = DragQueryFileW(drop, i, NULL, 512) + 1;
+		if (fileNameLength > longestFileNameLength)
+		{
+			longestFileNameLength = fileNameLength;
+			fileName = (char*)realloc(fileName, longestFileNameLength * sizeof(*fileName));
+		}
+		DragQueryFileA(drop, i, fileName, fileNameLength);
+	}
+	DragFinish(drop);
+
+	hBitmap = (HBITMAP)LoadImageA(hInst, fileName, IMAGE_BITMAP, 0, 0,
+		LR_DEFAULTSIZE | LR_LOADFROMFILE);
+
+	return hBitmap;
+}
+
+void ChangeSpriteBitmap(Sprite* sprite, HBITMAP hBitmap)
+{
+	sprite->hBitmap = hBitmap;
+
+	GetObject(hBitmap, sizeof(BITMAP), &sprite->bitmap);
+	sprite->hMask = CreateBitmapMask(hBitmap, COLORREF(0xFFFFFF));
+
+	sprite->Height = sprite->bitmap.bmHeight;
+	sprite->Width = sprite->bitmap.bmWidth;
 }

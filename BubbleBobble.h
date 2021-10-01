@@ -1,6 +1,10 @@
 ﻿#pragma once
 
+#include <windows.h>
+#include <shellapi.h>
+
 #include "resource.h"
+
 
 struct Coords {
 	int x;
@@ -25,8 +29,11 @@ typedef struct Sprite {
 } Sprite;
 
 void InitSprite(Sprite* sprite);
-HBITMAP CreateBitmapMask(HBITMAP hbmColour, COLORREF crTransparent);
 void DrawSpriteOnDC(HDC hdc);
 void DrawFrame();
 void Move(Sprite* sprite, double vertical, double horizonal);
 void ChangeSpritePosition(Sprite* sprite, RECT* clientRect);
+void ChangeSpriteBitmap(Sprite* sprite, HBITMAP hBitmap);
+
+HBITMAP CreateBitmapMask(HBITMAP hbmColour, COLORREF crTransparent);
+HBITMAP GetBmpByDragDrop(WPARAM wParam);
