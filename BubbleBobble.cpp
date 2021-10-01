@@ -170,6 +170,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
+	case WM_MOUSEWHEEL:
+	{
+		if (GET_KEYSTATE_WPARAM(wParam) == MK_SHIFT)
+		{
+			GET_WHEEL_DELTA_WPARAM(wParam) >= 0 ? Move(sprite, -5, 0) : Move(sprite, 5, 0);
+		}
+		else
+		{
+			GET_WHEEL_DELTA_WPARAM(wParam) >= 0 ? Move(sprite, 0, -5) : Move(sprite, 0, 5);
+		}
+		//zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+
+		break;
+	}
 	case WM_DROPFILES:
 	{
 		HBITMAP bmp = GetBmpByDragDrop(wParam);
